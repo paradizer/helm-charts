@@ -11,6 +11,6 @@ entries:
     name: fleet-telemetry
     type: application
     urls:
-    - https://github.com/teslamotors/helm-charts/releases/download/fleet-telemetry-0.1.0/fleet-telemetry-0.1.0.tgz
+    - https://paradizer.github.io/fleet-telemetry-0.1.0.tgz
     version: 0.1.0
 generated: "2023-06-08T06:04:58.177493362Z"
