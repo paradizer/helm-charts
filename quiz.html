@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .question {
+            margin-bottom: 24px;
+            padding: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .question h3 {
+            margin-top: 0;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            padding: 4px 0;
+        }
+        .spoiler {
+            background: #333;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .spoiler.revealed {
+            color: #fff;
+        }
+        #loading {
+            text-align: center;
+            font-size: 1.2em;
+            margin-top: 60px;
+        }
+        #error {
+            color: red;
+            text-align: center;
+        }
+        #reload {
+            display: none;
+            margin: 20px auto;
+            padding: 10px 24px;
+            font-size: 1em;
+            cursor: pointer;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #333;
+            color: #fff;
+        }
+        #reload:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quiz</h1>
+    <div id="loading">Loading questions...</div>
+    <div id="error"></div>
+    <div id="questions"></div>
+    <button id="reload" onclick="loadQuestions()">Reload Questions</button>
+
+    <script>
+        function decodeHTML(html) {
+            const el = document.createElement('textarea');
+            el.innerHTML = html;
+            return el.value;
+        }
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function loadQuestions() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const container = document.getElementById('questions');
+            const reload = document.getElementById('reload');
+
+            loading.style.display = '';
+            error.textContent = '';
+            container.innerHTML = '';
+            reload.style.display = 'none';
+
+            fetch('https://opentdb.com/api.php?amount=10&category=10&type=multiple')
+                .then(res => res.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    reload.style.display = 'block';
+
+                    data.results.forEach((q, i) => {
+                        const div = document.createElement('div');
+                        div.className = 'question';
+
+                        const correct = decodeHTML(q.correct_answer);
+                        const options = shuffle(
+                            [q.correct_answer, ...q.incorrect_answers].map(decodeHTML)
+                        );
+
+                        div.innerHTML = `
+                            <h3>${i + 1}. ${decodeHTML(q.question)}</h3>
+                            <ul class="options">
+                                ${options.map(o => `<li>${o}</li>`).join('')}
+                            </ul>
+                            <p>Answer: <span class="spoiler" onclick="this.classList.toggle('revealed')">${correct}</span></p>
+                        `;
+                        container.appendChild(div);
+                    });
+                })
+                .catch(err => {
+                    loading.style.display = 'none';
+                    reload.style.display = 'block';
+                    error.textContent = 'Failed to load questions: ' + err.message;
+                });
+        }
+
+        loadQuestions();
+    </script>
+</body>
+</html>
